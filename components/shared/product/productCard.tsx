@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import ProductPrice from "./productPrice";
+import { Product } from "@/generated/prisma/client";
 const ProductCard = ({ product }: { product: any }) => {
   return (
     <Card className="w-full max-w-sm">
