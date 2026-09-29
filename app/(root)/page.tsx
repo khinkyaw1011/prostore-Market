@@ -1,4 +1,4 @@
-import ProductList from "@/components/shared/product/product";
+import ProductList from "@/components/product/product";
 import { getLatestProducts } from "@/lib/actions/product.action";
 
 const HomePage = async() => {
