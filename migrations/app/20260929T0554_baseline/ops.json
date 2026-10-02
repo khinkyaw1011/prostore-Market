@@ -1,0 +1,97 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.Product",
+    "label": "Create table \"Product\"",
+    "summary": "Creates table \"Product\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Product"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Product\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Product\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Product\"",
+        "sql": "CREATE TABLE \"public\".\"Product\" (\n  \"banner\" text,\n  \"brand\" text NOT NULL,\n  \"category\" text NOT NULL,\n  \"createdAt\" timestamp(6) DEFAULT (now()) NOT NULL,\n  \"description\" text NOT NULL,\n  \"id\" uuid DEFAULT (gen_random_uuid()) NOT NULL,\n  \"images\" text[],\n  \"isFeatured\" bool NOT NULL,\n  \"name\" text NOT NULL,\n  \"numReviews\" int4 DEFAULT 0 NOT NULL,\n  \"price\" numeric(12,2) DEFAULT '0'::numeric(12,2) NOT NULL,\n  \"rating\" numeric(3,2) DEFAULT '0'::numeric(3,2) NOT NULL,\n  \"slug\" text NOT NULL,\n  \"stock\" int4 NOT NULL,\n  CONSTRAINT \"Product_pkey\" PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Product\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Product\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Product.product_slug_idx",
+    "label": "Create index \"product_slug_idx\" on \"Product\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "product_slug_idx",
+        "table": "Product"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"product_slug_idx\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"product_slug_idx\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"product_slug_idx\"",
+        "sql": "CREATE UNIQUE INDEX \"product_slug_idx\" ON \"public\".\"Product\" (\"slug\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"product_slug_idx\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"product_slug_idx\""
+        ]
+      }
+    ]
+  }
+]

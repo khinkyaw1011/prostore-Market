@@ -1,0 +1,92 @@
+[
+  {
+    "id": "alterNullability.setNotNull.Product.images",
+    "label": "Set NOT NULL on \"Product\".\"images\"",
+    "operationClass": "destructive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "images",
+        "table": "Product"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"images\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Product",
+          "images"
+        ]
+      },
+      {
+        "description": "ensure no NULL values in \"images\"",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"public\".\"Product\" WHERE \"images\" IS NULL) AS \"result\"",
+        "params": []
+      }
+    ],
+    "execute": [
+      {
+        "description": "set NOT NULL on \"images\"",
+        "sql": "ALTER TABLE \"public\".\"Product\" ALTER COLUMN \"images\" SET NOT NULL"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"images\" is NOT NULL",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3 AND \"is_nullable\" = $4)) AS \"result\"",
+        "params": [
+          "public",
+          "Product",
+          "images",
+          "NO"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "checkConstraint.Product.Product_images_elem_not_null_2f12556f",
+    "label": "Add check constraint \"Product_images_elem_not_null_2f12556f\" on \"Product\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "checkConstraint",
+        "name": "Product_images_elem_not_null_2f12556f",
+        "table": "Product"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Product_images_elem_not_null_2f12556f\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Product_images_elem_not_null_2f12556f",
+          "public",
+          "\"public\".\"Product\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add check constraint \"Product_images_elem_not_null_2f12556f\"",
+        "sql": "ALTER TABLE \"public\".\"Product\" ADD CONSTRAINT \"Product_images_elem_not_null_2f12556f\" CHECK (array_position(\"images\", NULL) IS NULL)"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify constraint \"Product_images_elem_not_null_2f12556f\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Product_images_elem_not_null_2f12556f",
+          "public",
+          "\"public\".\"Product\""
+        ]
+      }
+    ]
+  }
+]

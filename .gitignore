@@ -44,3 +44,4 @@ dist/
 .env
 
 /generated/prisma
+/generated/prisma8

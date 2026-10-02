@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated Prisma ORM 8 artifacts:
+    "generated/**",
+    "migrations/snapshots/**",
   ]),
 ]);
 

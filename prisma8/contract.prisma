@@ -1,0 +1,78 @@
+// use prisma-8
+// Contract inferred from the live database schema. Edit as needed, then run `prisma contract emit`.
+
+model Product {
+  id          Uuid           @id(map: "Product_pkey") @default(sql`gen_random_uuid()`)
+  name        String
+  slug        String
+  category    String
+  images      String[]
+  brand       String
+  description String
+  stock       Int
+  price       Numeric(12, 2) @default(0)
+  rating      Numeric(3, 2)  @default(0)
+  numReviews  Int            @default(0)
+  isFeatured  Boolean
+  banner      String?
+  createdAt   Timestamp(6)   @default(now())
+
+  @@index([slug], map: "product_slug_idx", unique: true)
+}
+
+model User {
+  id            Uuid           @id @default(sql`gen_random_uuid()`)
+  name          String?        @default("NO_NAME")
+  email         String
+  emailVerified Timestamp(6)?
+  image         String?
+  password      String?
+  role          String?        @default("user")
+  address       Json
+  paymentMethod String?
+  createdAt     Timestamp(6)   @default(now())
+  updatedAt     temporal.updatedAt()
+  accounts      Account[]
+  sessions      Session[]
+
+  @@index([email], unique: true, name: "user_email_idx")
+}
+
+model Account {
+  userId            Uuid
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  createdAt         Timestamp(3) @default(now())
+  updatedAt         temporal.updatedAt()
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String
+  userId       Uuid
+  expires      Timestamp(6)
+  createdAt    Timestamp(6)   @default(now())
+  updatedAt    temporal.updatedAt()
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([sessionToken])
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    Timestamp(3)
+
+  @@id([identifier, token])
+}
