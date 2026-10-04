@@ -5,19 +5,20 @@ import { signInDefaultValues } from "@/lib/constants";
 import { signInWithCredentials } from "@/lib/actions/user.action";
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-
+import { useSearchParams } from "next/navigation";
 const CredentialSignInForm = () => {
   const [data, action] = useActionState(signInWithCredentials, {
     success: false,
     message: "",
   });
+  const searchParams= useSearchParams();
+  const callBackUrl=searchParams.get('callbackUrl') || '/';
   const SignInButton=()=>{
     const {pending} =useFormStatus();
     return(
-        <Button disabled={pending} className='w-full' variant='default'>
+        <Button type='submit' disabled={pending} className='w-full' variant='default'>
             {pending ? 'Signing In...' : 'Sign In'}
         </Button>
     )
@@ -25,6 +26,7 @@ const CredentialSignInForm = () => {
   }
   return (
     <form action={action}>
+      <input type="hidden" name="callbackUrl" value={callBackUrl} />
       <div className="space-y-4">
         <div>
           <Label htmlFor="email">Email</Label>

@@ -12,6 +12,7 @@ import {
   SheetTrigger,
   SheetFooter
 } from "@/components/ui/sheet";
+import UserButton from "./user-button";
 
 const MenuPage = () => {
   return (
@@ -50,12 +51,7 @@ const MenuPage = () => {
             
             <SheetDescription></SheetDescription>
             <SheetFooter className="w-full">
-         
-          <Button className="bg-black text-white rounded-2xl p-2 w-full">
-              <Link href="/sign-in" className="flex items-center justify-center gap-2">
-                <UserIcon /> Sign In
-              </Link>
-            </Button>
+            <UserButton/>
         </SheetFooter>
           </SheetContent>
          
