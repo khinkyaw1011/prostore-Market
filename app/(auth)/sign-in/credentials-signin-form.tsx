@@ -38,6 +38,9 @@ const CredentialSignInForm = () => {
             autoComplete="email"
             defaultValue={signInDefaultValues.email}
           />
+          {data.errors?.email?.[0] && (
+            <p className="text-sm text-destructive">{data.errors.email[0]}</p>
+          )}
         </div>
         <div>
           <Label htmlFor="password">Password</Label>
@@ -49,6 +52,9 @@ const CredentialSignInForm = () => {
             autoComplete="password"
             defaultValue={signInDefaultValues.password}
           />
+          {data.errors?.password?.[0] && (
+            <p className="text-sm text-destructive">{data.errors.password[0]}</p>
+          )}
         </div>
         <SignInButton/>
         {data && !data.success && (
@@ -56,7 +62,7 @@ const CredentialSignInForm = () => {
         )}
         <div className="text-sm text-center text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/sign-in" target="_self" className="link">
+          <Link href="/sign-up" target="_self" className="link">
             Sign Up
           </Link>
         </div>

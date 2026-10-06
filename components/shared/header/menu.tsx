@@ -5,7 +5,6 @@ import Link from "next/link";
 import { FiMoreVertical } from "react-icons/fi";
 import {
   Sheet,
-  SheetHeader,
   SheetContent,
   SheetDescription,
   SheetTitle,
@@ -27,12 +26,7 @@ const MenuPage = () => {
             Cart
           </Link>
         </Button>
-        <Button className="rounded bg-black text-white px-3 py-2">
-          <Link href="/sign-in" className="flex items-center gap-2">
-            <UserIcon />
-            Sign In
-          </Link>
-        </Button>
+        <UserButton/>
       </nav>
 
       <nav className="md:hidden">
@@ -52,7 +46,7 @@ const MenuPage = () => {
             <SheetDescription></SheetDescription>
             <SheetFooter className="w-full">
             <UserButton/>
-        </SheetFooter>
+          </SheetFooter>
           </SheetContent>
          
         </Sheet>

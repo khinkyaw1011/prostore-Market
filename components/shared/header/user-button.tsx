@@ -17,8 +17,8 @@ const UserButton = async () => {
   // If not logged in, show Sign In button
   if (!session) {
     return (
-      <Button>
-        <Link href='/sign-in'>
+      <Button className='rounded p-4 m-2'>
+        <Link href='/sign-in' className='flex gap-2'>
           <UserIcon /> Sign In
         </Link>
       </Button>
@@ -58,7 +58,7 @@ const UserButton = async () => {
             <form action={signOutUser} className='w-full'>
               <Button
                 className='w-full py-4 px-2 justify-start'
-                variant='ghost'
+                variant='ghost' type='submit'
               >
                 Sign Out
               </Button>

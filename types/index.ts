@@ -6,3 +6,9 @@ export type Product= Omit<z.infer<typeof insertProductSchema>,'images'> &{
     createdAt:string;
     images:readonly string[];
 }
+
+export type ActionState = {
+    success:boolean;
+    message:string;
+    errors?:Record<string,string[]>;
+}
