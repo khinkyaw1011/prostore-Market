@@ -17,10 +17,12 @@ const UserButton = async () => {
   // If not logged in, show Sign In button
   if (!session) {
     return (
-      <Button className='rounded p-4 m-2'>
-        <Link href='/sign-in' className='flex gap-2'>
-          <UserIcon /> Sign In
-        </Link>
+      <Button
+        className='rounded p-4 m-2'
+        nativeButton={false}
+        render={<Link href='/sign-in' className='flex gap-2' />}
+      >
+        <UserIcon /> Sign In
       </Button>
     );
   }
@@ -31,15 +33,15 @@ const UserButton = async () => {
   return (
     <div className='flex gap-2 items-center'>
       <DropdownMenu>
-        <DropdownMenuTrigger>
-          <div className='flex items-center'>
+        <DropdownMenuTrigger
+          render={
             <Button
               variant='ghost'
               className='relative w-8 h-8 rounded-full ml-2 flex items-center justify-center bg-gray-200'
-            >
-              {firstInitial}
-            </Button>
-          </div>
+            />
+          }
+        >
+          {firstInitial}
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className='w-56' align='end' >

@@ -20,11 +20,9 @@ const MenuPage = () => {
         <div>
           <ModeToggle />
         </div>
-        <Button>
-          <Link href="/sign-in" className="flex items-center gap-2">
-            <ShoppingCart />
-            Cart
-          </Link>
+        <Button nativeButton={false} render={<Link href="/sign-in" className="flex items-center gap-2" />}>
+          <ShoppingCart />
+          Cart
         </Button>
         <UserButton/>
       </nav>
@@ -37,11 +35,9 @@ const MenuPage = () => {
          <SheetContent className="p-5 flex flex-col items-start gap-4">
             <SheetTitle className='text-xl'>Menu</SheetTitle>
             <ModeToggle />
-            <Button>
-              <Link href="/cart" className="flex items-center gap-2">
-                <ShoppingCart /> Cart
-              </Link>
-            </Button>
+<Button nativeButton={false} render={<Link href="/cart" className="flex items-center gap-2" />}>
+               <ShoppingCart /> Cart
+             </Button>
             
             <SheetDescription></SheetDescription>
             <SheetFooter className="w-full">

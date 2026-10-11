@@ -76,3 +76,16 @@ model VerificationToken {
 
   @@id([identifier, token])
 }
+
+model Cart {
+  id            Uuid           @id @default(sql`gen_random_uuid()`)
+  userId        Uuid?
+  sessionCartId String
+  items         Json[]         @default([])
+itemPrice     Numeric(12, 2)
+  totalPrice    Numeric(12, 2)
+  shippingPrice Numeric(12, 2)
+  taxPrice      Numeric(12, 2)
+  createdAt     Timestamp(6)   @default(now())
+  user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

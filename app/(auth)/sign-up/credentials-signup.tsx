@@ -34,7 +34,7 @@ const CredentialSignInForm = () => {
             id="name"
             name="name"
             type="name"
-            //required
+            required
             autoComplete="name"
             defaultValue={signUpDefaultValues.name}
           />
@@ -48,7 +48,7 @@ const CredentialSignInForm = () => {
             id="email"
             name="email"
             type="text"
-            // required
+            required
             autoComplete="email"
             defaultValue={signUpDefaultValues.email}
           />

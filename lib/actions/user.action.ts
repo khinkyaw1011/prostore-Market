@@ -6,6 +6,7 @@ import { hashSync } from 'bcrypt-ts-edge'
 import { createUser } from '@/db/user'
 import { formatError, fieldErrorsOf } from '../utils'
 import type { ActionState } from '@/types'
+
 //Sign in the user with credentials
 export async function signInWithCredentials(prevState:ActionState, formData:FormData) {
     try {
@@ -86,6 +87,8 @@ export async function signUpWithCredentials(prevState: ActionState, formData: Fo
     return {
       success: false,
       message: formatError(error),
+      errors: fieldErrorsOf(error),
     };
   }
 }
+

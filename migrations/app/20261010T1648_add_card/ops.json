@@ -1,0 +1,122 @@
+[
+  {
+    "id": "table.Cart",
+    "label": "Create table \"Cart\"",
+    "summary": "Creates table \"Cart\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Cart"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Cart\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Cart\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Cart\"",
+        "sql": "CREATE TABLE \"public\".\"Cart\" (\n  \"createdAt\" timestamp(6) DEFAULT (now()) NOT NULL,\n  \"id\" uuid DEFAULT (gen_random_uuid()) NOT NULL,\n  \"itemPrice\" numeric(12,2) NOT NULL,\n  \"items\" json[] DEFAULT '{}' NOT NULL,\n  \"sessionCartId\" text NOT NULL,\n  \"shippingPrice\" numeric(12,2) NOT NULL,\n  \"taxPrice\" numeric(12,2) NOT NULL,\n  \"totalPrice\" numeric(12,2) NOT NULL,\n  \"userId\" uuid,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"Cart_items_elem_not_null_ea5c0770\" CHECK (array_position(\"items\", NULL) IS NULL)\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Cart\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Cart\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.Cart.Cart_userId_idx_a489d58a",
+    "label": "Create index \"Cart_userId_idx_a489d58a\" on \"Cart\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "Cart_userId_idx_a489d58a",
+        "table": "Cart"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"Cart_userId_idx_a489d58a\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Cart_userId_idx_a489d58a\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"Cart_userId_idx_a489d58a\"",
+        "sql": "CREATE INDEX \"Cart_userId_idx_a489d58a\" ON \"public\".\"Cart\" (\"userId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"Cart_userId_idx_a489d58a\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Cart_userId_idx_a489d58a\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Cart.Cart_userId_fkey",
+    "label": "Add foreign key \"Cart_userId_fkey\" on \"Cart\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Cart_userId_fkey",
+        "table": "Cart"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Cart_userId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Cart_userId_fkey",
+          "public",
+          "\"public\".\"Cart\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Cart_userId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Cart\"\nADD CONSTRAINT \"Cart_userId_fkey\"\nFOREIGN KEY (\"userId\")\nREFERENCES \"public\".\"User\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Cart_userId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Cart_userId_fkey",
+          "public",
+          "\"public\".\"Cart\""
+        ]
+      }
+    ]
+  }
+]
