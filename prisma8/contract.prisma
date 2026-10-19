@@ -16,6 +16,7 @@ model Product {
   isFeatured  Boolean
   banner      String?
   createdAt   Timestamp(6)   @default(now())
+  orderitems OrderItem[]
 
   @@index([slug], map: "product_slug_idx", unique: true)
 }
@@ -34,6 +35,7 @@ model User {
   updatedAt     temporal.updatedAt()
   accounts      Account[]
   sessions      Session[]
+  Order Order[]
 
   @@index([email], unique: true, name: "user_email_idx")
 }
@@ -88,4 +90,36 @@ itemPrice     Numeric(12, 2)
   taxPrice      Numeric(12, 2)
   createdAt     Timestamp(6)   @default(now())
   user          User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+model Order {
+  id              Uuid         @id @default(uuid())
+  userId          Uuid
+  shippingAddress Json
+  paymentMethod   String
+  paymentResult   Json?
+  itemsPrice      Numeric(12, 2)
+  shippingPrice   Numeric(12, 2)
+  taxPrice        Numeric(12, 2)
+  totalPrice      Numeric(12, 2)
+  isPaid          Boolean      @default(false)
+  paidAt          Timestamp(6)?
+  isDelivered     Boolean      @default(false)
+  deliveredAt     Timestamp(6)?
+  createdAt       Timestamp(6) @default(now())
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderitems      OrderItem[]
+}
+
+model OrderItem {
+  orderId   Uuid
+  productId Uuid
+  qty       Int
+  price     Numeric(12, 2)
+  name      String
+  slug      String
+  image     String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([orderId, productId])
 }

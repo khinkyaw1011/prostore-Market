@@ -1,6 +1,7 @@
 
-import {array, email, z} from 'zod';
+import { z} from 'zod';
 import { formatNumberWithDecimal } from './utils';
+import { PAYMENT_METHODS } from './constants';
 
 const currency=z.string().refine((value)=>/^\d+(\.\d{2})?$/.test(formatNumberWithDecimal(Number(value))),'Price must be excetly two decimal places');
 //Schema for inserting products
@@ -56,3 +57,52 @@ export const insertCartSchema=z.object({
 
 
 })
+export const shippingAddressSchema = z.object({
+  fullName: z.string().min(3, "Name must be at least 3 characters"),
+  streetAddress: z.string().min(3, "Address must be at least 3 characters"),
+  city: z.string().min(3, "City must be at least 3 characters"),
+  postalCode: z.string().min(3, "Postal code must be at least 3 characters"),
+  country: z.string().min(3, "Country must be at least 3 characters"),
+  lat: z.number().optional(),
+  lng: z.number().optional(),
+});
+// Schema for payment method
+export const paymentMethodSchema = z
+  .object({
+    type: z.string().min(1, 'Payment method is required'),
+  })
+  .refine((data) => PAYMENT_METHODS.includes(data.type), {
+    path: ['type'],
+    error: 'Invalid payment method', // Zod 4: `error` replaces `message`
+  });
+  // Schema for inserting an order
+export const insertOrderSchema = z.object({
+  userId: z.string().min(1, 'User is required'),
+  itemsPrice: currency,
+  shippingPrice: currency,
+  taxPrice: currency,
+  totalPrice: currency,
+  paymentMethod: z.string().refine((data) => PAYMENT_METHODS.includes(data), {
+    error: 'Invalid payment method',
+  }),
+  shippingAddress: shippingAddressSchema,
+});
+
+// Schema for inserting an order item
+export const insertOrderItemSchema = z.object({
+  productId: z.string(),
+  slug: z.string(),
+  image: z.string(),
+  name: z.string(),
+  price: currency,
+  qty: z.number(),
+});
+
+
+// Schema for the payment result PayPal sends back
+export const paymentResultSchema = z.object({
+  id: z.string(),
+  status: z.string(),
+  email_address: z.string(),
+  pricePaid: z.string(),
+});

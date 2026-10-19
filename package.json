@@ -9,10 +9,14 @@
     "start": "next start",
     "lint": "eslint",
     "prisma8:migrate": "prisma db migrate --advance-ref db",
-    "postinstall": "prisma contract emit"
+    "postinstall": "prisma contract emit",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
+    "@hookform/resolvers": "^5.9.1",
+    "@paypal/react-paypal-js": "^10.6.0",
     "@phosphor-icons/react": "^2.1.10",
     "@prisma/orm-postgres": "^8.0.0-rc.14",
     "bcrypt-ts-edge": "^3.0.1",
@@ -22,8 +26,10 @@
     "next": "16.3.5",
     "next-auth": "^5.0.0-beta.32",
     "next-themes": "^0.4.6",
+    "pg": "^8.23.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-hook-form": "^7.90.0",
     "react-icons": "^5.7.0",
     "react-spinners": "^0.17.1",
     "shadcn": "^4.21.0",
@@ -33,6 +39,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -40,8 +47,11 @@
     "dotenv": "^18.0.3",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "jest": "^30.5.2",
     "prisma": "^8.0.0-rc.20",
     "tailwindcss": "^4",
+    "ts-jest": "^29.4.15",
+    "ts-node": "^10.9.2",
     "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   }

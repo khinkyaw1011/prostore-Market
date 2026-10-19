@@ -64,27 +64,54 @@ export const config = {
 
       return session;
     },
-    async jwt({token,user}){
-      //asign user fields to token
-      if(user){
-        token.role=user.role;
-        //If user has no name then use the email
-        if(user.name === 'NO_NAME' && user.id){
-          token.name = user.email!.split('@')[0];
-         // Update database to reflect token name
-          await db.orm.public.User.where({ id: user.id }).update({ name: token.name });
+    async jwt({ token, user, trigger, session }) {
+  if (user) {
+    token.id = user.id;
+    token.role = user.role;
 
-          //old version
-          // await prisma.user.update({
-          //   where: { id: user.id },
-          //   data: { name: token.name },
-          // });
-        }
-      }
-      return token
-    },
+  
+// ...your existing code that sets token.name from the email, etc.
+if (trigger === "signIn" || trigger === "signUp") {
+  const cookiesObject = await cookies();
+  const sessionCartId = cookiesObject.get("sessionCartId")?.value;
+
+  if (sessionCartId) {
+    const sessionCart = await db.orm.public.Cart.where({
+      sessionCartId,
+    }).first();
+
+    // Only a guest cart (no user yet) gets moved to this user
+    if (sessionCart && !sessionCart.userId) {
+      // Delete the user's current cart, if any
+      await db.orm.public.Cart.where({ userId: user.id! }).delete();
+
+      // Assign the guest cart to the logged-in user
+      await db.orm.public.Cart.where({ id: sessionCart.id }).update({
+        userId: user.id!,
+      });
+    }
+  }
+}
+  }
+  return token;
+},
     authorized({request,auth}:any){
-//Check for session cart cookies
+       // Array of regex patterns of paths we want to protect
+       const protectedPaths = [
+      /\/shipping-address/,
+      /\/payment-method/,
+      /\/place-order/,
+      /\/profile/,
+      /\/user\/(.*)/,
+      /\/order\/(.*)/,
+      /\/admin/,
+    ];
+     // Get the pathname from the request URL object
+    const { pathname } = request.nextUrl;
+     // Not authenticated and accessing a protected path: redirect to sign in
+    if (!auth && protectedPaths.some((p) => p.test(pathname))) return false;
+
+    //Check for session cart cookies
       if(!request.cookies.get('sessionCartId')){
           //Generate new session cart id cookies
           const sessionCartId=crypto.randomUUID();

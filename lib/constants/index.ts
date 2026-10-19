@@ -19,3 +19,13 @@ export const signUpDefaultValues={
     confirmPassword:'',
 }
 
+export const shippingAddressDefaultValues = {
+  fullName: "",
+  streetAddress: "",
+  city: "",
+  postalCode: "",
+  country: "",
+};
+export const PAYMENT_METHODS = process.env.PAYMENT_METHODS?.split(',').map((method) => method.trim()) || ['PayPal', 'PayPay', 'Cash on Delivery'];
+export const DEFAULT_PAYMENT_METHOD = process.env.DEFAULT_PAYMENT_METHOD || 'PayPal';
+

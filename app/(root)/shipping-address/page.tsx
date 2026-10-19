@@ -1,0 +1,31 @@
+import { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { getMyCart } from "@/lib/actions/cart.action";
+import { getUserById } from "@/lib/actions/user.action";
+import { ShippingAddress } from "@/types";
+import ShippingAddressForm from "./shipping-address-form";
+import CheckoutSteps from "@/components/shared/checkout-steps";
+export const metadata: Metadata = {
+  title: "Shipping Address",
+};
+
+export default async function ShippingAddressPage() {
+  const cart = await getMyCart();
+  if (!cart || cart.items.length === 0) redirect("/cart");
+
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error("No user ID");
+
+  const user = await getUserById(userId);
+  // The form from the next video will use this as its initial values
+  const address = user.address as ShippingAddress | null;
+
+return (
+  <>
+    <CheckoutSteps current={1} />
+    <ShippingAddressForm address={user.address as ShippingAddress | null} />
+  </>
+);
+}

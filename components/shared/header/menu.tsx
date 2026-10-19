@@ -9,7 +9,7 @@ import {
   SheetDescription,
   SheetTitle,
   SheetTrigger,
-  SheetFooter
+  SheetFooter,
 } from "@/components/ui/sheet";
 import UserButton from "./user-button";
 
@@ -20,31 +20,36 @@ const MenuPage = () => {
         <div>
           <ModeToggle />
         </div>
-        <Button nativeButton={false} render={<Link href="/sign-in" className="flex items-center gap-2" />}>
+        <Button
+          nativeButton={false}
+         render={<Link href="/cart" className="flex items-center gap-2" />}
+        >
           <ShoppingCart />
           Cart
         </Button>
-        <UserButton/>
+        <UserButton />
       </nav>
 
       <nav className="md:hidden">
         <Sheet>
-          <SheetTrigger className='align-middle'>
+          <SheetTrigger className="align-middle">
             <FiMoreVertical />
           </SheetTrigger>
-         <SheetContent className="p-5 flex flex-col items-start gap-4">
-            <SheetTitle className='text-xl'>Menu</SheetTitle>
+          <SheetContent className="p-5 flex flex-col items-start gap-4">
+            <SheetTitle className="text-xl">Menu</SheetTitle>
             <ModeToggle />
-<Button nativeButton={false} render={<Link href="/cart" className="flex items-center gap-2" />}>
-               <ShoppingCart /> Cart
-             </Button>
-            
+            <Button
+              nativeButton={false}
+              render={<Link href="/cart" className="flex items-center gap-2" />}
+            >
+              <ShoppingCart /> Cart
+            </Button>
+
             <SheetDescription></SheetDescription>
             <SheetFooter className="w-full">
-            <UserButton/>
-          </SheetFooter>
+              <UserButton />
+            </SheetFooter>
           </SheetContent>
-         
         </Sheet>
       </nav>
     </div>

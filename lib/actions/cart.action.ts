@@ -63,7 +63,6 @@ export async function addItemToCart(data: CartItem) {
     if (!cart) {
       if (product.stock < 1) throw new Error("Not enough stock");
 
-      // Create new cart object
       const newCart = insertCartSchema.parse({
         userId,
         items: [item],
@@ -71,20 +70,15 @@ export async function addItemToCart(data: CartItem) {
         ...calcPrice([item]),
       });
 
-      // Add to database
       await db.orm.public.Cart.create({
         ...newCart,
         ...prices([item]),
       } as unknown as CartCreate);
 
       revalidatePath(`/product/${product.slug}`);
-      return {
-        success: true,
-        message: `${product.name} added to cart`,
-      };
+      return { success: true, message: `${product.name} added to cart` };
     }
 
-    // Cart exists: update quantity or add the new item
     const currentItems = cart.items as unknown as CartItem[];
     const existItem = currentItems.find((x) => x.productId === item.productId);
 
@@ -109,10 +103,7 @@ export async function addItemToCart(data: CartItem) {
       message: `${product.name} ${existItem ? "updated in" : "added to"} cart`,
     };
   } catch (error) {
-    return {
-      success: false,
-      message: formatError(error),
-    };
+    return { success: false, message: formatError(error) };
   }
 }
 
@@ -142,4 +133,44 @@ export async function getMyCart() {
     shippingPrice: cart.shippingPrice.toString(),
     taxPrice: cart.taxPrice.toString(),
   });
+}
+
+export async function removeItemFromCart(productId: string) {
+  try {
+    // Get product
+    const product = await db.orm.public.Product.where({ id: productId }).first();
+    if (!product) throw new Error("Product not found");
+
+    // Get user cart
+    const cart = await getMyCart();
+    if (!cart) throw new Error("Cart not found");
+
+    // Check for item
+    const currentItems = cart.items as CartItem[];
+    const existItem = currentItems.find((x) => x.productId === productId);
+    if (!existItem) throw new Error("Item not found");
+
+    // Remove the item if qty is 1, otherwise decrease qty
+    const items: CartItem[] =
+      existItem.qty === 1
+        ? currentItems.filter((x) => x.productId !== productId)
+        : currentItems.map((x) =>
+            x.productId === productId ? { ...x, qty: x.qty - 1 } : x,
+          );
+
+    // Update cart in database
+    await db.orm.public.Cart.where({ id: cart.id }).update({
+      items,
+      ...prices(items),
+    });
+
+    revalidatePath(`/product/${product.slug}`);
+
+    return {
+      success: true,
+      message: `${product.name} ${existItem.qty === 1 ? "removed from" : "updated in"} cart`,
+    };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
 }

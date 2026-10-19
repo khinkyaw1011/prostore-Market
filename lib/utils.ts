@@ -1,16 +1,16 @@
-import { z } from 'zod';
 
+import { z } from 'zod';
 export { cn } from "cn"
 
 //convert prisma object into a regular Js object 
-type Serialized<T> = T extends Date
-    ? string
-    : T extends (infer U)[]
-      ? Serialized<U>[]
-      : T extends object
-        ? { [K in keyof T]: Serialized<T[K]> }
-        : T;
-
+//convert prisma object into a regular Js object
+type Serialized<T> = T extends { toJSON(): infer R }
+  ? R // Date and Temporal dates become strings
+  : T extends (infer U)[]
+    ? Serialized<U>[]
+    : T extends object
+      ? { [K in keyof T]: Serialized<T[K]> }
+      : T;
 export function convertToPlainObject<T>(value: T): Serialized<T> {
     return JSON.parse(JSON.stringify(value));
 }
@@ -89,4 +89,57 @@ export function round2(value:number | string){
     else {
         throw new Error('Value in not a number or string')
     }
+}
+// Currency formatter
+const CURRENCY_FORMATTER = new Intl.NumberFormat("en-US", {
+  currency: "USD",
+  style: "currency",
+  minimumFractionDigits: 2,
+});
+
+// Format currency using the formatter above
+export function formatCurrency(amount: number | string | null) {
+  if (typeof amount === "number") {
+    return CURRENCY_FORMATTER.format(amount);
+  } else if (typeof amount === "string") {
+    return CURRENCY_FORMATTER.format(Number(amount));
+  } else {
+    return "NaN";
+  }
+}
+
+// Shorten UUID (show only the last 6 characters)
+export function formatId(id: string) {
+  return `..${id.slice(-6)}`;
+}
+
+// Format date and time
+export function formatDateTime(date: Date | string) {
+  const dateTimeOptions: Intl.DateTimeFormatOptions = {
+    month: 'short', // e.g. 'Oct'
+    year: 'numeric', // e.g. '2026'
+    day: 'numeric', // e.g. '25'
+    hour: 'numeric', // e.g. '8'
+    minute: 'numeric', // e.g. '30'
+    hour12: true, // 12-hour clock
+  };
+  const dateOptions: Intl.DateTimeFormatOptions = {
+    weekday: 'short', // e.g. 'Mon'
+    month: 'short',
+    year: 'numeric',
+    day: 'numeric',
+  };
+  const timeOptions: Intl.DateTimeFormatOptions = {
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true,
+  };
+
+  const value = new Date(date);
+
+  return {
+    dateTime: value.toLocaleString('en-US', dateTimeOptions),
+    dateOnly: value.toLocaleString('en-US', dateOptions),
+    timeOnly: value.toLocaleString('en-US', timeOptions),
+  };
 }
