@@ -1,5 +1,6 @@
 
 import { z } from 'zod';
+import type { Temporal } from 'temporal-polyfill';
 export { cn } from "cn"
 
 //convert prisma object into a regular Js object 
@@ -108,13 +109,31 @@ export function formatCurrency(amount: number | string | null) {
   }
 }
 
+// Number formatter (adds thousands separators)
+const NUMBER_FORMATTER = new Intl.NumberFormat("en-US");
+
+// Format number using the formatter above
+export function formatNumber(number: number) {
+  return NUMBER_FORMATTER.format(number);
+}
+type DateInput = Date | string | Temporal.Instant | Temporal.PlainDateTime;
+
+// Convert any date value Prisma 8 might return into a JS Date
+export function toDate(value: DateInput): Date {
+  if (value instanceof Date) return value;
+  if (typeof value === 'string') return new Date(value);
+  if ('epochMilliseconds' in value) return new Date(value.epochMilliseconds); // Instant
+  // PlainDateTime has no time zone; Prisma 7-era columns stored UTC
+  return new Date(value.toZonedDateTime('UTC').epochMilliseconds);
+}
+
 // Shorten UUID (show only the last 6 characters)
 export function formatId(id: string) {
   return `..${id.slice(-6)}`;
 }
 
 // Format date and time
-export function formatDateTime(date: Date | string) {
+export function formatDateTime(date: DateInput) {
   const dateTimeOptions: Intl.DateTimeFormatOptions = {
     month: 'short', // e.g. 'Oct'
     year: 'numeric', // e.g. '2026'
@@ -135,7 +154,7 @@ export function formatDateTime(date: Date | string) {
     hour12: true,
   };
 
-  const value = new Date(date);
+  const value = toDate(date);
 
   return {
     dateTime: value.toLocaleString('en-US', dateTimeOptions),
@@ -143,3 +162,11 @@ export function formatDateTime(date: Date | string) {
     timeOnly: value.toLocaleString('en-US', timeOptions),
   };
 }
+
+export type Price = string & {
+  readonly __numericPrecision: 12;
+  readonly __numericScale: 2;
+};
+
+export const toPrice = (value: string | number) =>
+  Number(value).toFixed(2) as Price;

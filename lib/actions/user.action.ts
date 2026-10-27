@@ -1,5 +1,5 @@
 'use server'
-import {paymentMethodSchema, signInFormSchema, signUpFormSchema} from '../validators'
+import {paymentMethodSchema, signInFormSchema, signUpFormSchema, updateProfileSchema} from '../validators'
 import {signIn,signOut} from "@/auth"
 import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { hashSync } from 'bcrypt-ts-edge'
@@ -138,6 +138,26 @@ export async function updateUserPaymentMethod(
     await db.orm.public.User.where({ id: currentUser.id }).update({
       paymentMethod: paymentMethod.type,
     });
+
+    return { success: true, message: 'User updated successfully' };
+  } catch (error) {
+    return { success: false, message: formatError(error) };
+  }
+}
+// Update the user profile
+export async function updateProfile(user: z.infer<typeof updateProfileSchema>) {
+  try {
+    const session = await auth();
+    const userId = session?.user?.id;
+    if (!userId) throw new Error('User is not authorized');
+
+    // Validate on the server too, not just in the form
+    const { name } = updateProfileSchema.pick({ name: true }).parse(user);
+
+    const currentUser = await db.orm.public.User.first({ id: userId });
+    if (!currentUser) throw new Error('User not found');
+
+    await db.orm.public.User.where({ id: currentUser.id }).update({ name });
 
     return { success: true, message: 'User updated successfully' };
   } catch (error) {

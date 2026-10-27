@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "uploadthing/tw/v4";
+@source "../node_modules/@uploadthing/react/dist";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -215,4 +217,135 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+/* ---------- Glassy dashboard ---------- */
+/* Unlayered on purpose so these override the Card/Button utility backgrounds */
+
+/* Warm blurred backdrop the glass cards sit on */
+.glass-bg {
+  background-color: #e9e1d6;
+  background-image:
+    radial-gradient(at 12% 18%, rgb(255 255 255 / 0.9) 0, transparent 45%),
+    radial-gradient(at 85% 10%, rgb(196 164 132 / 0.55) 0, transparent 50%),
+    radial-gradient(at 70% 85%, rgb(42 157 143 / 0.28) 0, transparent 50%),
+    radial-gradient(at 5% 90%, rgb(160 120 90 / 0.35) 0, transparent 45%);
+  background-attachment: fixed;
+}
+
+.glass-card {
+  background: rgb(255 255 255 / 0.45);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgb(255 255 255 / 0.65);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 8px 32px rgb(60 45 30 / 0.08),
+    inset 0 1px 0 rgb(255 255 255 / 0.8);
+}
+
+/* Teal highlight card (like "Total Earnings") */
+.glass-card-accent {
+  background: linear-gradient(135deg, rgb(42 157 143 / 0.9), rgb(31 120 110 / 0.85));
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgb(255 255 255 / 0.35);
+  border-radius: 1.25rem;
+  color: #fff;
+  box-shadow:
+    0 8px 32px rgb(42 157 143 / 0.3),
+    inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+
+/* Frosted pill button / link */
+.glass-pill {
+  background: rgb(255 255 255 / 0.55);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgb(255 255 255 / 0.8);
+  border-radius: 9999px;
+  color: #1c1c1c;
+  box-shadow:
+    0 2px 8px rgb(60 45 30 / 0.08),
+    inset 0 1px 0 rgb(255 255 255 / 0.9);
+  transition: background 0.2s;
+}
+.glass-pill:hover {
+  background: rgb(255 255 255 / 0.85);
+}
+
+/* Solid dark pill (like "Transfer") */
+.glass-pill-dark {
+  background: #1c1c1c;
+  border: 1px solid #1c1c1c;
+  border-radius: 9999px;
+  color: #fff;
+}
+.glass-pill-dark:hover {
+  background: #333;
+}
+
+.dark .glass-bg {
+  background-color: #17140f;
+  background-image:
+    radial-gradient(at 12% 18%, rgb(120 95 70 / 0.35) 0, transparent 45%),
+    radial-gradient(at 70% 85%, rgb(42 157 143 / 0.25) 0, transparent 50%);
+}
+.dark .glass-card {
+  background: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.12);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 0.35), inset 0 1px 0 rgb(255 255 255 / 0.08);
+}
+.dark .glass-pill {
+  background: rgb(255 255 255 / 0.1);
+  border-color: rgb(255 255 255 / 0.2);
+  color: #fff;
+}
+.dark .glass-pill:hover {
+  background: rgb(255 255 255 / 0.2);
+}
+
+/* Frosted top / bottom bars (header, footer) */
+.glass-nav {
+  background: rgb(255 255 255 / 0.4);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border-color: rgb(255 255 255 / 0.65);
+}
+
+/* Frosted text inputs */
+.glass-input {
+  background: rgb(255 255 255 / 0.5);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-color: rgb(255 255 255 / 0.8);
+  border-radius: 0.75rem;
+}
+.glass-input:focus-visible {
+  border-color: rgb(42 157 143 / 0.6);
+}
+
+/* Dropdown menus and slide-out sheets */
+.glass-popover {
+  background: rgb(255 255 255 / 0.7);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  backdrop-filter: blur(24px) saturate(160%);
+  border-color: rgb(255 255 255 / 0.8);
+  border-radius: 1rem;
+  box-shadow: 0 12px 40px rgb(60 45 30 / 0.15);
+}
+.glass-popover[data-slot='sheet-content'] {
+  border-radius: 0;
+}
+
+.dark .glass-nav {
+  background: rgb(20 17 13 / 0.5);
+  border-color: rgb(255 255 255 / 0.1);
+}
+.dark .glass-input {
+  background: rgb(255 255 255 / 0.06);
+  border-color: rgb(255 255 255 / 0.15);
+}
+.dark .glass-popover {
+  background: rgb(30 26 20 / 0.75);
+  border-color: rgb(255 255 255 / 0.12);
 }

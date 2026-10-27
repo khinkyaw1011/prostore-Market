@@ -22,7 +22,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en" suppressHydrationWarning
       className={cn("antialiased", inter.className, "font-mono", jetbrainsMono.variable)}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="glass-bg min-h-full flex flex-col">
         <ThemeProvider
         attribute='class'
         defaultTheme="light"

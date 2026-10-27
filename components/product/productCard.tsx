@@ -7,7 +7,11 @@ const ProductCard = ({ product }: { product: any }) => {
     <Card className="w-full max-w-sm">
       <CardHeader className="p-0 items-center">
         <Link href={`/product/${product.slug}`}>
-          <Image src={product.images[0]} alt={product.name} width={500} height={300} priority={true} />
+          {product.images?.[0] ? (
+            <Image src={product.images[0]} alt={product.name} width={500} height={300} priority={true} />
+          ) : (
+            <div className="flex h-75 w-full items-center justify-center text-xs text-muted-foreground">No image</div>
+          )}
         </Link>
       </CardHeader>
       <CardContent className="p-4 grid gap-4">

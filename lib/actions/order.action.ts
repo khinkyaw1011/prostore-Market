@@ -6,13 +6,15 @@ import { db } from '@/db/prisma';
 import { getMyCart } from './cart.action';
 import { getUserById } from './user.action';
 import { insertOrderSchema } from '../validators';
-import { convertToPlainObject, formatError } from '../utils';
+import { formatError, toDate } from '../utils';
 import { Order } from '@/types';
 import { z } from 'zod';
 import { paypal } from '../paypal';
 import { revalidatePath } from 'next/cache';
 import { PaymentResult } from '@/types';
 import { Temporal } from 'temporal-polyfill';
+import { PAGE_SIZE } from '../constants';
+import { requireAdmin } from '../auth-guard';
 // Create order and order items
 export async function createOrder() {
   try {
@@ -219,4 +221,177 @@ async function updateOrderToPaid({
       paymentResult,
     });
   });
+}
+
+// Get the logged-in user's orders
+export async function getMyOrders({
+  limit = PAGE_SIZE,
+  page,
+}: {
+  limit?: number;
+  page: number;
+}) {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) throw new Error('User is not authorized');
+
+  const currentPage = Math.max(1, page);
+
+  const [data, { total }] = await Promise.all([
+    db.orm.public.Order.where({ userId })
+      .orderBy([(o) => o.createdAt.desc(), (o) => o.id.desc()])
+      .limit(limit)
+      .offset((currentPage - 1) * limit)
+      .all(),
+    db.orm.public.Order.where({ userId }).aggregate((a) => ({ total: a.count() })),
+  ]);
+
+  return {
+    data,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+// Get all orders (admin)
+export async function getAllOrders({
+  limit = PAGE_SIZE,
+  page,
+}: {
+  limit?: number;
+  page: number;
+}) {
+  const currentPage = Math.max(1, page);
+
+  const [data, { total }] = await Promise.all([
+    db.orm.public.Order
+      .include('user', (user) => user.select('name'))
+      .orderBy([(o) => o.createdAt.desc(), (o) => o.id.desc()])
+      .limit(limit)
+      .offset((currentPage - 1) * limit)
+      .all(),
+    db.orm.public.Order.aggregate((a) => ({ total: a.count() })),
+  ]);
+
+  return {
+    data,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+// Delete an order (admin)
+export async function deleteOrder(id: string) {
+  try {
+    await requireAdmin();
+
+    // Order items are removed too (onDelete: Cascade)
+    await db.orm.public.Order.where({ id }).delete();
+
+    revalidatePath('/admin/orders');
+
+    return { success: true, message: 'Order deleted successfully' };
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// Update COD order to paid (admin)
+export async function updateOrderToPaidCOD(orderId: string) {
+  try {
+    await requireAdmin();
+
+    await updateOrderToPaid({ orderId });
+
+    revalidatePath(`/order/${orderId}`);
+
+    return { success: true, message: 'Order marked as paid' };
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// Update COD order to delivered (admin)
+export async function deliverOrder(orderId: string) {
+  try {
+    await requireAdmin();
+
+    const order = await db.orm.public.Order.where({ id: orderId }).first();
+
+    if (!order) throw new Error('Order not found');
+    if (!order.isPaid) throw new Error('Order is not paid');
+
+    await db.orm.public.Order.where({ id: orderId }).update({
+      isDelivered: true,
+      deliveredAt: Temporal.Now.zonedDateTimeISO('UTC').toPlainDateTime(),
+    });
+
+    revalidatePath(`/order/${orderId}`);
+
+    return { success: true, message: 'Order has been marked delivered' };
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    return { success: false, message: formatError(error) };
+  }
+}
+
+type SalesDataType = {
+  date: string;
+  totalSales: number;
+}[];
+
+// Get sales data and order summary
+export async function getOrderSummary() {
+  // Get counts for each resource
+  const [ordersCount, productsCount, usersCount] = await Promise.all([
+    db.orm.public.Order.aggregate((a) => ({ total: a.count() })),
+    db.orm.public.Product.aggregate((a) => ({ total: a.count() })),
+    db.orm.public.User.aggregate((a) => ({ total: a.count() })),
+  ]);
+
+  // Calculate the total sales
+  const totalSales = await db.orm.public.Order.aggregate((a) => ({
+    totalPrice: a.sum('totalPrice'),
+  }));
+
+  // Get daily sales (grouped by MM/DD)
+  const salesDataRaw = await db
+    .runtime()
+    .query(
+      db.raw.sql`
+        SELECT to_char("createdAt"::date, 'MM/DD') AS "date", sum("totalPrice") AS "totalSales"
+        FROM "Order"
+        GROUP BY "createdAt"::date
+        ORDER BY "createdAt"::date
+      `
+        .returnsRow({ date: 'pg/text@1', totalSales: 'pg/numeric@1' })
+        .build()
+    )
+    .toArray();
+
+  const salesData: SalesDataType = salesDataRaw.map((entry) => ({
+    date: entry.date,
+    totalSales: Number(entry.totalSales),
+  }));
+
+  // Get latest sales
+  const latestSales = await db.orm.public.Order
+    .include('user', (user) => user.select('name'))
+    .orderBy((o) => o.createdAt.desc())
+    .limit(6)
+    .all();
+
+  return {
+    ordersCount: ordersCount.total,
+    productsCount: productsCount.total,
+    usersCount: usersCount.total,
+    totalSales: { _sum: { totalPrice: Number(totalSales.totalPrice ?? 0) } },
+    latestSales: latestSales.map((order) => ({
+      id: order.id,
+      createdAt: toDate(order.createdAt),
+      totalPrice: Number(order.totalPrice),
+      user: order.user ? { name: order.user.name } : null,
+    })),
+    salesData,
+  };
 }

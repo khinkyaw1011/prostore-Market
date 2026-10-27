@@ -61,7 +61,10 @@ export const config = {
       if (trigger === 'update') {
         session.user.name = user.name;
       }
-
+      if (trigger === 'update' && session?.user?.name && token.sub) {
+    const dbUser = await db.orm.public.User.select('name').first({ id: token.sub });
+    if (dbUser) token.name = dbUser.name;
+  }
       return session;
     },
     async jwt({ token, user, trigger, session }) {
@@ -70,7 +73,7 @@ export const config = {
     token.role = user.role;
 
   
-// ...your existing code that sets token.name from the email, etc.
+
 if (trigger === "signIn" || trigger === "signUp") {
   const cookiesObject = await cookies();
   const sessionCartId = cookiesObject.get("sessionCartId")?.value;
@@ -92,7 +95,9 @@ if (trigger === "signIn" || trigger === "signUp") {
     }
   }
 }
+
   }
+   
   return token;
 },
     authorized({request,auth}:any){
