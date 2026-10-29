@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { APP_NAME } from '@/lib/constants';
 import Menu from '@/components/shared/header/menu';
-import { Input } from '@/components/ui/input';
+import AdminSearch from '@/components/admin/admin-search';
 import MainNav from './main-nav';
 export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
   const session = await auth();
@@ -19,7 +19,7 @@ export default async function AdminLayout({ children }: LayoutProps<'/admin'>) {
           </Link>
           <MainNav className='mx-6' />
           <div className='ml-auto flex items-center gap-4'>
-            <Input type='search' placeholder='Search...' className='md:w-25 lg:w-75' />
+            <AdminSearch />
             <Menu />
           </div>
         </div>

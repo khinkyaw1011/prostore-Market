@@ -1,9 +1,10 @@
 import {z} from 'zod'
 import { insertProductSchema,insertCartSchema,cartItemSchema, insertOrderSchema ,insertOrderItemSchema, paymentResultSchema} from '@/lib/validators';
-import { shippingAddressSchema } from '@/lib/validators';
+import { shippingAddressSchema, insertReviewSchema } from '@/lib/validators';
 export type Product= Omit<z.infer<typeof insertProductSchema>,'images'> &{
     id:string;
     rating:string;
+    numReviews:number;
     createdAt:string;
     images:readonly string[];
 }
@@ -27,6 +28,12 @@ export type Order = z.infer<typeof insertOrderSchema> & {
   isDelivered: boolean;
   deliveredAt: Date | null;
   orderitems: OrderItem[];
+  paymentResult?: PaymentResult | null;
   user: { name: string; email: string };
 };
 export type PaymentResult = z.infer<typeof paymentResultSchema>;
+export type Review = z.infer<typeof insertReviewSchema> & {
+  id: string;
+  createdAt: Date;
+  user?: { name: string };
+};

@@ -26,10 +26,10 @@ export const shippingAddressDefaultValues = {
   postalCode: "",
   country: "",
 };
-export const PAYMENT_METHODS = process.env.PAYMENT_METHODS?.split(',').map((method) => method.trim()) || ['PayPal', 'PayPay', 'Cash on Delivery'];
+export const PAYMENT_METHODS = process.env.PAYMENT_METHODS?.split(',').map((method) => method.trim()) || ['PayPal', 'Stripe', 'Cash on Delivery'];
 export const DEFAULT_PAYMENT_METHOD = process.env.DEFAULT_PAYMENT_METHOD || 'PayPal';
 
-export const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 2;
+export const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 10;
  export const productDefaultValues = {
   name: '',
   slug: '',
@@ -44,3 +44,17 @@ export const PAGE_SIZE = Number(process.env.PAGE_SIZE) || 2;
   isFeatured: false,
   banner:null,
  }
+
+export const USER_ROLES = process.env.USER_ROLES
+  ? process.env.USER_ROLES.split(', ')
+  : ['admin', 'user'];
+
+
+export const reviewFormDefaultValues = {
+  title: '',
+  description: '',
+  rating: 0,
+};
+
+
+export const SENDER_EMAIL = process.env.SENDER_EMAIL || 'onboarding@resend.dev';

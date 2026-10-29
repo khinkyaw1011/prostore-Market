@@ -17,6 +17,7 @@ model Product {
   banner      String?
   createdAt   Timestamp(6)   @default(now())
   orderitems OrderItem[]
+  reviews    Review[]
 
   @@index([slug], map: "product_slug_idx", unique: true)
 }
@@ -36,6 +37,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   Order Order[]
+  reviews       Review[]
 
   @@index([email], unique: true, name: "user_email_idx")
 }
@@ -122,4 +124,17 @@ model OrderItem {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@id([orderId, productId])
+}
+
+model Review {
+  id                 Uuid         @id @default(uuid())
+  userId             Uuid
+  productId          Uuid
+  rating             Int
+  title              String
+  description        String
+  isVerifiedPurchase Boolean      @default(true)
+  createdAt          Timestamp(6) @default(now())
+  product            Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user               User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

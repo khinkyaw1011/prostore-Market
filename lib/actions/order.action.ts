@@ -15,6 +15,7 @@ import { PaymentResult } from '@/types';
 import { Temporal } from 'temporal-polyfill';
 import { PAGE_SIZE } from '../constants';
 import { requireAdmin } from '../auth-guard';
+import { updateOrderToPaid } from '../order-payment';
 // Create order and order items
 export async function createOrder() {
   try {
@@ -183,45 +184,6 @@ export async function approvePayPalOrder(
   }
 }
  
-// Update order to paid (not exported)
-async function updateOrderToPaid({
-  orderId,
-  paymentResult,
-}: {
-  orderId: string;
-  paymentResult?: PaymentResult;
-}) {
-  // Get the order, including its items
-  const order = await db.orm.public.Order
-    .include('orderitems')
-    .where({ id: orderId })
-    .first();
- 
-  if (!order) throw new Error('Order not found');
-  if (order.isPaid) throw new Error('Order is already paid');
- 
-  // Transaction: reduce product stock and mark the order as paid
-  await db.transaction(async (tx) => {
-    for (const item of order.orderitems) {
-      const product = await tx.orm.public.Product
-        .where({ id: item.productId })
-        .first();
-      if (!product) throw new Error('Product not found');
-      // If your OrderItem field is named quantity instead of qty, change it in both places below
-      if (product.stock < item.qty) throw new Error('Not enough stock');
- 
-      await tx.orm.public.Product
-        .where({ id: item.productId })
-        .update({ stock: product.stock - item.qty });
-    }
- 
-    await tx.orm.public.Order.where({ id: orderId }).update({
-      isPaid: true,
-      paidAt: Temporal.Now.zonedDateTimeISO('UTC').toPlainDateTime(),
-      paymentResult,
-    });
-  });
-}
 
 // Get the logged-in user's orders
 export async function getMyOrders({
@@ -256,11 +218,29 @@ export async function getMyOrders({
 export async function getAllOrders({
   limit = PAGE_SIZE,
   page,
+  query = '',
 }: {
   limit?: number;
   page: number;
+  query?: string;
 }) {
   const currentPage = Math.max(1, page);
+  const search = query.trim().toLowerCase();
+
+  // Search by buyer name; the ORM only has a case-sensitive LIKE, so filter in code
+  if (search) {
+    const matches = (
+      await db.orm.public.Order
+        .include('user', (user) => user.select('name'))
+        .orderBy([(o) => o.createdAt.desc(), (o) => o.id.desc()])
+        .all()
+    ).filter((order) => order.user?.name?.toLowerCase().includes(search));
+
+    return {
+      data: matches.slice((currentPage - 1) * limit, currentPage * limit),
+      totalPages: Math.ceil(matches.length / limit),
+    };
+  }
 
   const [data, { total }] = await Promise.all([
     db.orm.public.Order

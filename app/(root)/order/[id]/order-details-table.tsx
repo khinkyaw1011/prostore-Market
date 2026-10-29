@@ -21,6 +21,7 @@ import {
   updateOrderToPaidCOD,
 } from "@/lib/actions/order.action";
 import { Button } from "@/components/ui/button";
+import StripePayment from "./stripe-payment";
 import {
   Table,
   TableBody,
@@ -92,10 +93,12 @@ const OrderDetailsTable = ({
   order,
   paypalClientId,
   isAdmin,
+  stripeClientSecret,
 }: {
   order: Order;
   paypalClientId: string;
   isAdmin: boolean;
+  stripeClientSecret: string | null;
 }) => {
   const {
     id,
@@ -277,8 +280,20 @@ const OrderDetailsTable = ({
                 </div>
               )}
 
-              {/* Cash on delivery (admin) */}
-              {isAdmin && !isPaid && paymentMethod === "Cash on Delivery" && (
+              {/* Stripe */}
+              {!isPaid && paymentMethod === "Stripe" && stripeClientSecret && (
+                <StripePayment
+                  priceInCents={Math.round(Number(totalPrice) * 100)}
+                  orderId={id}
+                  clientSecret={stripeClientSecret}
+                  userEmail={order.user.email}
+                />
+              )}
+
+              {/* Cash on delivery, or a Stripe payment already received (admin) */}
+              {isAdmin &&
+                !isPaid &&
+                (paymentMethod === "Cash on Delivery" || paymentMethod === "Stripe") && (
                 <MarkAsPaidButton orderId={id} />
               )}
               {isAdmin && isPaid && !isDelivered && <MarkAsDeliveredButton orderId={id} />}

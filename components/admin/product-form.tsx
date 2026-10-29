@@ -120,6 +120,8 @@ export default function ProductForm({
   };
 
   const images = useWatch({ control: form.control, name: 'images' });
+  const isFeatured = useWatch({ control: form.control, name: 'isFeatured' });
+  const banner = useWatch({ control: form.control, name: 'banner' });
   const isSubmitting = form.formState.isSubmitting;
 
   return (
@@ -170,7 +172,7 @@ export default function ProductForm({
                     />
                     <button
                       type='button'
-                      className='absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-lg bg-[#2a9d8f] px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-[#1f786e]'
+                      className='absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center gap-1 rounded-lg bg-[#1e3a5f] px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-[#16294a]'
                       onClick={() => {
                         form.setValue(
                           'slug',
@@ -284,7 +286,7 @@ export default function ProductForm({
                       }}
                       appearance={{
                         button:
-                          'h-9 rounded-lg bg-[#2a9d8f] px-4 text-xs font-medium text-white hover:bg-[#1f786e] focus-within:ring-[#2a9d8f]/50 ut-uploading:bg-[#1f786e]',
+                          'h-9 rounded-lg bg-[#1e3a5f] px-4 text-xs font-medium text-white hover:bg-[#16294a] focus-within:ring-[#1e3a5f]/50 ut-uploading:bg-[#16294a]',
                         allowedContent: 'text-xs text-muted-foreground',
                       }}
                     />
@@ -406,7 +408,67 @@ export default function ProductForm({
         >
           <div className='upload-field'>
             {/* isFeatured */}
-            <p className='text-xs text-muted-foreground'>Featured settings coming soon.</p>
+            <Controller
+              control={form.control}
+              name='isFeatured'
+              render={({ field }) => (
+                <label
+                  htmlFor='isFeatured'
+                  className='flex cursor-pointer items-center gap-2 text-sm font-medium'
+                >
+                  <input
+                    id='isFeatured'
+                    type='checkbox'
+                    checked={!!field.value}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    className='size-4 accent-[#1e3a5f]'
+                  />
+                  Is featured?
+                </label>
+              )}
+            />
+            {/* Banner */}
+            {isFeatured && banner && (
+              <div className='group relative mt-3'>
+                <Image
+                  src={banner}
+                  alt='banner image'
+                  width={1920}
+                  height={680}
+                  className='w-full rounded-sm object-cover object-center'
+                />
+                <button
+                  type='button'
+                  aria-label='Remove banner'
+                  onClick={() => form.setValue('banner', null)}
+                  className='absolute -right-1.5 -top-1.5 flex size-6 items-center justify-center rounded-full bg-black/70 text-white'
+                >
+                  <X className='size-3.5' />
+                </button>
+              </div>
+            )}
+            {isFeatured && !banner && (
+              <div className='mt-3 flex justify-center'>
+                <UploadButton
+                  endpoint='imageUploader'
+                  onClientUploadComplete={(res: { url: string }[]) => {
+                    form.setValue('banner', res[0].url);
+                  }}
+                  onUploadError={(error: Error) => {
+                    toast.add({
+                      type: 'error',
+                      title: 'Error',
+                      description: `ERROR! ${error.message}`,
+                    });
+                  }}
+                  appearance={{
+                    button:
+                      'h-9 rounded-lg bg-[#1e3a5f] px-4 text-xs font-medium text-white hover:bg-[#16294a] focus-within:ring-[#1e3a5f]/50 ut-uploading:bg-[#16294a]',
+                    allowedContent: 'text-xs text-muted-foreground',
+                  }}
+                />
+              </div>
+            )}
           </div>
         </FormSection>
 

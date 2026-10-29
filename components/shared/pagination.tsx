@@ -17,7 +17,7 @@ export default function Pagination({
 }: PaginationProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const current = Number(page) || 1;
+  const current = Number(page) || 2;
 
   // Keep any other query params, just change the page number
   const hrefFor = (target: number) => {

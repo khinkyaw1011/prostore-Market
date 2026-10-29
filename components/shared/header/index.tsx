@@ -2,11 +2,14 @@ import Image from 'next/image'
 import Link from "next/link";
 import { APP_NAME } from '@/lib/constants'
 import MenuPage from './menu';
+import CategoryDrawer from './category-drawer';
+import Search from './search';
 const Header = () => {
-    return ( <header className="glass-nav sticky top-0 z-40 w-full border-b">
+    return ( <header className="glass-nav sticky top-0 z-40 w-full border">
          <div className="wrapper flex-between">
            <div className="flex-start">
-             <Link href='/' className="flex-start">
+             <CategoryDrawer />
+             <Link href='/' className="flex-start ml-4">
              <Image src='/images/logo.svg' alt={`${APP_NAME} logo`}
              height={48}  width={48} priority={true}/>
              <span className="hidden lg:inline font-bold text-2xl ml-3">
@@ -15,6 +18,9 @@ const Header = () => {
             </Link>
            </div>
            
+            <div className="hidden md:block">
+               <Search />
+            </div>
             <div className="space-x-4">
                <MenuPage/>
             </div>

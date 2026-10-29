@@ -1,5 +1,5 @@
 'use server'
-import {paymentMethodSchema, signInFormSchema, signUpFormSchema, updateProfileSchema} from '../validators'
+import {paymentMethodSchema, signInFormSchema, signUpFormSchema, updateProfileSchema, updateUserSchema} from '../validators'
 import {signIn,signOut} from "@/auth"
 import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { hashSync } from 'bcrypt-ts-edge'
@@ -11,6 +11,9 @@ import { auth } from "@/auth";
 import { ShippingAddress } from "@/types";
 import { db } from '@/db/prisma'
 import {z} from 'zod'
+import { revalidatePath } from 'next/cache'
+import { PAGE_SIZE, USER_ROLES } from '../constants'
+import { requireAdmin } from '../auth-guard'
 //Sign in the user with credentials
 export async function signInWithCredentials(prevState:ActionState, formData:FormData) {
     try {
@@ -101,6 +104,97 @@ export async function getUserById(userId: string) {
   if (!user) throw new Error("User not found");
   return user;
 }
+// Get all users (admin, paginated)
+export async function getAllUsers({
+  limit = PAGE_SIZE,
+  page,
+  query = '',
+}: {
+  limit?: number;
+  page: number;
+  query?: string;
+}) {
+  await requireAdmin();
+
+  const currentPage = Math.max(1, page);
+  const search = query.trim().toLowerCase();
+
+  // Search by name or email; the ORM only has a case-sensitive LIKE, so filter in code
+  if (search) {
+    const matches = (
+      await db.orm.public.User.orderBy((user) => user.createdAt.desc()).all()
+    ).filter(
+      (user) =>
+        user.name?.toLowerCase().includes(search) ||
+        user.email.toLowerCase().includes(search)
+    );
+
+    return {
+      data: matches.slice((currentPage - 1) * limit, currentPage * limit),
+      totalPages: Math.ceil(matches.length / limit),
+    };
+  }
+
+  const [users, { total }] = await Promise.all([
+    db.orm.public.User
+      .orderBy((user) => user.createdAt.desc())
+      .limit(limit)
+      .offset((currentPage - 1) * limit)
+      .all(),
+    db.orm.public.User.aggregate((a) => ({ total: a.count() })),
+  ]);
+
+  return {
+    data: users,
+    totalPages: Math.ceil(total / limit),
+  };
+}
+
+// Delete a user (admin)
+export async function deleteUser(id: string) {
+  try {
+    await requireAdmin();
+
+    const session = await auth();
+    if (session?.user?.id === id) throw new Error('You cannot delete your own account');
+
+    const userExists = await db.orm.public.User.where({ id }).first();
+    if (!userExists) throw new Error('User not found');
+
+    await db.orm.public.User.where({ id }).delete();
+
+    revalidatePath('/admin/users');
+
+    return { success: true, message: 'User deleted successfully' };
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    return { success: false, message: formatError(error) };
+  }
+}
+
+// Update a user (admin): name and role only; email is not editable
+export async function updateUser(user: z.infer<typeof updateUserSchema>) {
+  try {
+    await requireAdmin();
+
+    const { id, name, role } = updateUserSchema.parse(user);
+
+    if (!USER_ROLES.includes(role)) throw new Error('Invalid role');
+
+    const userExists = await db.orm.public.User.where({ id }).first();
+    if (!userExists) throw new Error('User not found');
+
+    await db.orm.public.User.where({ id }).update({ name, role });
+
+    revalidatePath('/admin/users');
+
+    return { success: true, message: 'User updated successfully' };
+  } catch (error) {
+    if (isRedirectError(error)) throw error;
+    return { success: false, message: formatError(error) };
+  }
+}
+
 export async function updateUserAddress(data: ShippingAddress) {
   try {
     const session = await auth();

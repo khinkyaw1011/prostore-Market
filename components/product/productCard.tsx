@@ -2,10 +2,16 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import ProductPrice from "./productPrice";
+import Rating from "@/components/shared/product/rating";
 const ProductCard = ({ product }: { product: any }) => {
   return (
     <Card className="w-full max-w-sm">
-      <CardHeader className="p-0 items-center">
+      <CardHeader className="relative p-0 items-center">
+        {product.isFeatured && (
+          <span className="absolute left-2 top-2 z-10 rounded-full bg-gold px-3 py-0.5 text-xs font-medium text-gold-foreground">
+            Featured
+          </span>
+        )}
         <Link href={`/product/${product.slug}`}>
           {product.images?.[0] ? (
             <Image src={product.images[0]} alt={product.name} width={500} height={300} priority={true} />
@@ -20,7 +26,7 @@ const ProductCard = ({ product }: { product: any }) => {
         <h2 className="text-sm font-medium">{product.name}</h2>
         </Link>
         <div className="flex-between gap-4">
-            <p>{product.rating} Stars</p>
+            <Rating value={Number(product.rating)} />
             {product.stock > 0 ? (
                 <ProductPrice value={Number(product.price)} />
             ):(
